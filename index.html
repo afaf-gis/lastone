@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/multi-style-layer.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/leaflet-search.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/city_1.js"></script>
+        <script src="data/new_table_name_2.js"></script>
+        <script src="data/maalem_3.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[32.894723769147056,13.218896730380692],[32.9025362691471,13.235414968435379]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
+          var tagName = event.target.tagName,
+            popup = map._popup;
+          // Also check if flag is already set.
+          if (tagName === "IMG" && popup && !popup._updated) {
+            popup._updated = true; // Set flag to prevent looping.
+            popup.update();
+          }
+        }, true);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_GoogleSatellite_0');
+        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
+        var layer_GoogleSatellite_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 25
+        });
+        layer_GoogleSatellite_0;
+        map.addLayer(layer_GoogleSatellite_0);
+        function pop_city_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['OBJECTID'] !== null ? autolinker.link(feature.properties['OBJECTID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name_of_city'] !== null ? autolinker.link(feature.properties['name_of_city'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['code'] !== null ? autolinker.link(feature.properties['code'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_city_1_0() {
+            return {
+                pane: 'pane_city_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(190,178,151,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_city_1');
+        map.getPane('pane_city_1').style.zIndex = 401;
+        map.getPane('pane_city_1').style['mix-blend-mode'] = 'normal';
+        var layer_city_1 = new L.geoJson(json_city_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_city_1',
+            layerName: 'layer_city_1',
+            pane: 'pane_city_1',
+            onEachFeature: pop_city_1,
+            style: style_city_1_0,
+        });
+        bounds_group.addLayer(layer_city_1);
+        map.addLayer(layer_city_1);
+        function pop_new_table_name_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(feature.properties['fid'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAME'] !== null ? autolinker.link(feature.properties['NAME'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_new_table_name_2_0() {
+            return {
+                pane: 'pane_new_table_name_2',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 8.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        function style_new_table_name_2_1() {
+            return {
+                pane: 'pane_new_table_name_2',
+                opacity: 1,
+                color: 'rgba(255,96,17,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 6.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_new_table_name_2');
+        map.getPane('pane_new_table_name_2').style.zIndex = 402;
+        map.getPane('pane_new_table_name_2').style['mix-blend-mode'] = 'normal';
+        var layer_new_table_name_2 = new L.geoJson.multiStyle(json_new_table_name_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_new_table_name_2',
+            layerName: 'layer_new_table_name_2',
+            pane: 'pane_new_table_name_2',
+            onEachFeature: pop_new_table_name_2,
+            styles: [style_new_table_name_2_0,style_new_table_name_2_1,]
+        });
+        bounds_group.addLayer(layer_new_table_name_2);
+        map.addLayer(layer_new_table_name_2);
+        function pop_maalem_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['OBJECTID'] !== null ? autolinker.link(feature.properties['OBJECTID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['code'] !== null ? autolinker.link(feature.properties['code'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['name'] !== null ? autolinker.link(feature.properties['name'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['date_of_biulding'] !== null ? autolinker.link(feature.properties['date_of_biulding'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['photo'] !== null ? autolinker.link(feature.properties['photo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['gema_mabna'] !== null ? autolinker.link(feature.properties['gema_mabna'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['x'] !== null ? autolinker.link(feature.properties['x'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['y'] !== null ? autolinker.link(feature.properties['y'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['xxx'] !== null ? autolinker.link(feature.properties['xxx'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['yyy'] !== null ? autolinker.link(feature.properties['yyy'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['x_x'] !== null ? autolinker.link(feature.properties['x_x'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['y_y'] !== null ? autolinker.link(feature.properties['y_y'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_maalem_3_0() {
+            return {
+                pane: 'pane_maalem_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,182,54,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_maalem_3');
+        map.getPane('pane_maalem_3').style.zIndex = 403;
+        map.getPane('pane_maalem_3').style['mix-blend-mode'] = 'normal';
+        var layer_maalem_3 = new L.geoJson(json_maalem_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_maalem_3',
+            layerName: 'layer_maalem_3',
+            pane: 'pane_maalem_3',
+            onEachFeature: pop_maalem_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_maalem_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_maalem_3);
+        map.addLayer(layer_maalem_3);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var baseMaps = {};
+        var overlaysTree = [
+            {label: '<img src="legend/maalem_3.png" /> maalem', layer: layer_maalem_3},
+            {label: '<img src="legend/new_table_name_2.png" /> new_table_name', layer: layer_new_table_name_2},
+            {label: '<img src="legend/city_1.png" /> city', layer: layer_city_1},
+            {label: "Google Satellite", layer: layer_GoogleSatellite_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+        setBounds();
+        map.addControl(new L.Control.Search({
+            layer: layer_city_1,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'OBJECTID'}));
+        document.getElementsByClassName('search-button')[0].className +=
+         ' fa fa-binoculars';
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"OBJECTID": "int","xxx": "int","yyy": "int","x_x": "real","photo": "str","gema_mabna": "str","name": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_OBJECTID = document.createElement("div");
+            div_OBJECTID.id = "div_OBJECTID";
+            div_OBJECTID.className = "slider";
+            document.getElementById("menu").appendChild(div_OBJECTID);
+            var lab_OBJECTID = document.createElement('div');
+            lab_OBJECTID.innerHTML  = 'OBJECTID: <span id="val_OBJECTID"></span>';
+            lab_OBJECTID.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_OBJECTID);
+            var reset_OBJECTID = document.createElement('div');
+            reset_OBJECTID.innerHTML = 'clear filter';
+            reset_OBJECTID.className = 'filterlabel';
+            lab_OBJECTID.className = 'filterlabel';
+            reset_OBJECTID.onclick = function() {
+                sel_OBJECTID.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_OBJECTID);
+            var sel_OBJECTID = document.getElementById('div_OBJECTID');
+            noUiSlider.create(sel_OBJECTID, {
+                connect: true,
+                start: [1, 13],
+                step: 1,
+                format: wNumb({
+                    decimals: 0,
+                    }),
+                range: {
+                min: 1,
+                max: 13
+                }
+            });
+            sel_OBJECTID.noUiSlider.on('update', function (values) {
+            filterVals =[];
+            for (value in values){
+            filterVals.push(parseInt(value))
+            }
+            val_OBJECTID = document.getElementById('val_OBJECTID');
+            val_OBJECTID.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_xxx = document.createElement("div");
+            div_xxx.id = "div_xxx";
+            div_xxx.className = "slider";
+            document.getElementById("menu").appendChild(div_xxx);
+            var lab_xxx = document.createElement('div');
+            lab_xxx.innerHTML  = 'xxx: <span id="val_xxx"></span>';
+            lab_xxx.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_xxx);
+            var reset_xxx = document.createElement('div');
+            reset_xxx.innerHTML = 'clear filter';
+            reset_xxx.className = 'filterlabel';
+            lab_xxx.className = 'filterlabel';
+            reset_xxx.onclick = function() {
+                sel_xxx.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_xxx);
+            var sel_xxx = document.getElementById('div_xxx');
+            noUiSlider.create(sel_xxx, {
+                connect: true,
+                start: [NULL, 13],
+                step: 1,
+                format: wNumb({
+                    decimals: 0,
+                    }),
+                range: {
+                min: NULL,
+                max: 13
+                }
+            });
+            sel_xxx.noUiSlider.on('update', function (values) {
+            filterVals =[];
+            for (value in values){
+            filterVals.push(parseInt(value))
+            }
+            val_xxx = document.getElementById('val_xxx');
+            val_xxx.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_yyy = document.createElement("div");
+            div_yyy.id = "div_yyy";
+            div_yyy.className = "slider";
+            document.getElementById("menu").appendChild(div_yyy);
+            var lab_yyy = document.createElement('div');
+            lab_yyy.innerHTML  = 'yyy: <span id="val_yyy"></span>';
+            lab_yyy.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_yyy);
+            var reset_yyy = document.createElement('div');
+            reset_yyy.innerHTML = 'clear filter';
+            reset_yyy.className = 'filterlabel';
+            lab_yyy.className = 'filterlabel';
+            reset_yyy.onclick = function() {
+                sel_yyy.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_yyy);
+            var sel_yyy = document.getElementById('div_yyy');
+            noUiSlider.create(sel_yyy, {
+                connect: true,
+                start: [NULL, 33],
+                step: 1,
+                format: wNumb({
+                    decimals: 0,
+                    }),
+                range: {
+                min: NULL,
+                max: 33
+                }
+            });
+            sel_yyy.noUiSlider.on('update', function (values) {
+            filterVals =[];
+            for (value in values){
+            filterVals.push(parseInt(value))
+            }
+            val_yyy = document.getElementById('val_yyy');
+            val_yyy.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_x_x = document.createElement("div");
+            div_x_x.id = "div_x_x";
+            div_x_x.className = "slider";
+            document.getElementById("menu").appendChild(div_x_x);
+            var lab_x_x = document.createElement('div');
+            lab_x_x.innerHTML  = 'x_x: <span id="val_x_x"></span>';
+            lab_x_x.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_x_x);
+            var reset_x_x = document.createElement('div');
+            reset_x_x.innerHTML = 'clear filter';
+            reset_x_x.className = 'filterlabel';
+            lab_x_x.className = 'filterlabel';
+            reset_x_x.onclick = function() {
+                sel_x_x.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_x_x);
+            var sel_x_x = document.getElementById('div_x_x');
+            noUiSlider.create(sel_x_x, {
+                connect: true,
+                start: [11.626, 13.252],
+                range: {
+                min: 11.626,
+                max: 13.252
+                }
+            });
+            sel_x_x.noUiSlider.on('update', function (values) {
+            val_x_x = document.getElementById('val_x_x');
+            val_x_x.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_photo = document.createElement('div');
+            div_photo.id = "div_photo";
+            div_photo.className= "filterselect";
+            document.getElementById("menu").appendChild(div_photo);
+            sel_photo = document.createElement('select');
+            sel_photo.multiple = true;
+            sel_photo.size = 1;
+            sel_photo.id = "sel_photo";
+            var photo_options_str = "<option value='' unselected></option>";
+            sel_photo.onchange = function(){filterFunc()};
+            photo_options_str  += '<option value="NULL">NULL</option>';
+            sel_photo.innerHTML = photo_options_str;
+            div_photo.appendChild(sel_photo);
+            var lab_photo = document.createElement('div');
+            lab_photo.innerHTML = 'photo';
+            lab_photo.className = 'filterlabel';
+            div_photo.appendChild(lab_photo);
+            var reset_photo = document.createElement('div');
+            reset_photo.innerHTML = 'clear filter';
+            reset_photo.className = 'filterlabel';
+            reset_photo.onclick = function() {
+                var options = document.getElementById("sel_photo").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_photo.appendChild(reset_photo);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_gema_mabna = document.createElement('div');
+            div_gema_mabna.id = "div_gema_mabna";
+            div_gema_mabna.className= "filterselect";
+            document.getElementById("menu").appendChild(div_gema_mabna);
+            sel_gema_mabna = document.createElement('select');
+            sel_gema_mabna.multiple = true;
+            sel_gema_mabna.size = 1;
+            sel_gema_mabna.id = "sel_gema_mabna";
+            var gema_mabna_options_str = "<option value='' unselected></option>";
+            sel_gema_mabna.onchange = function(){filterFunc()};
+            gema_mabna_options_str  += '<option value="NULL">NULL</option>';
+            sel_gema_mabna.innerHTML = gema_mabna_options_str;
+            div_gema_mabna.appendChild(sel_gema_mabna);
+            var lab_gema_mabna = document.createElement('div');
+            lab_gema_mabna.innerHTML = 'gema_mabna';
+            lab_gema_mabna.className = 'filterlabel';
+            div_gema_mabna.appendChild(lab_gema_mabna);
+            var reset_gema_mabna = document.createElement('div');
+            reset_gema_mabna.innerHTML = 'clear filter';
+            reset_gema_mabna.className = 'filterlabel';
+            reset_gema_mabna.onclick = function() {
+                var options = document.getElementById("sel_gema_mabna").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_gema_mabna.appendChild(reset_gema_mabna);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_name = document.createElement('div');
+            div_name.id = "div_name";
+            div_name.className= "filterselect";
+            document.getElementById("menu").appendChild(div_name);
+            sel_name = document.createElement('select');
+            sel_name.multiple = true;
+            sel_name.size = 3;
+            sel_name.id = "sel_name";
+            var name_options_str = "<option value='' unselected></option>";
+            sel_name.onchange = function(){filterFunc()};
+            name_options_str  += '<option value="NULL">NULL</option>';
+            name_options_str  += '<option value="hjfyjfghkf">hjfyjfghkf</option>';
+            name_options_str  += '<option value="kjgjotri">kjgjotri</option>';
+            sel_name.innerHTML = name_options_str;
+            div_name.appendChild(sel_name);
+            var lab_name = document.createElement('div');
+            lab_name.innerHTML = 'name';
+            lab_name.className = 'filterlabel';
+            div_name.appendChild(lab_name);
+            var reset_name = document.createElement('div');
+            reset_name.innerHTML = 'clear filter';
+            reset_name.className = 'filterlabel';
+            reset_name.onclick = function() {
+                var options = document.getElementById("sel_name").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_name.appendChild(reset_name);
+        </script>
+    </body>
+</html>
